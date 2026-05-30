@@ -2,3 +2,4 @@ fastapi
 uvicorn
 aiosqlite
 python-multipart
+jinja2
