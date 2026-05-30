@@ -3,23 +3,29 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import jinja2
+import os
 
 from database import init_db, get_tasks, create_task, update_task, update_task_status, delete_task
+from vuln import router as vuln_router
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await init_db()
-    yield
-
-
-app = FastAPI(lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader("templates"),
     autoescape=jinja2.select_autoescape()
 )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    os.makedirs("uploads", exist_ok=True)
+    yield
+
+
+app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.include_router(vuln_router)
 
 
 def render(template_name: str, **context):
