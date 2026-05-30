@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Todo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Kanban Todo</h1>
+            <button class="btn btn-primary" onclick="showAddModal()">+ Add Task</button>
+        </header>
+
+        <div class="board" id="board">
+            {% for col_id, label in [("todo", "To Do"), ("in_progress", "In Progress"), ("done", "Done")] %}
+            <div class="column" data-status="{{ col_id }}">
+                <div class="column-header">
+                    <h2>{{ label }}</h2>
+                    <span class="count">{{ columns[col_id]|length }}</span>
+                </div>
+                <div class="task-list" id="list-{{ col_id }}" data-status="{{ col_id }}">
+                    {% for task in columns[col_id] %}
+                    <div class="task" draggable="true" data-id="{{ task.id }}" data-status="{{ task.status }}" data-position="{{ task.position }}">
+                        <div class="task-body">
+                            <strong>{{ task.title }}</strong>
+                            {% if task.description %}
+                            <p>{{ task.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-small" onclick="showEditModal({{ task.id }})" data-title="{{ task.title|e }}" data-description="{{ task.description|e }}">✏️</button>
+                            <form action="/tasks/{{ task.id }}/delete" method="post" style="display:inline">
+                                <button class="btn-small btn-danger" type="submit">🗑️</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal-overlay" id="addModal" onclick="closeModals()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>Add Task</h2>
+            <form action="/tasks" method="post">
+                <input type="text" name="title" placeholder="Task title" required>
+                <textarea name="description" placeholder="Description (optional)" rows="3"></textarea>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeModals()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal" onclick="closeModals()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>Edit Task</h2>
+            <form id="editForm" method="post">
+                <input type="text" name="title" id="editTitle" placeholder="Task title" required>
+                <textarea name="description" id="editDescription" placeholder="Description (optional)" rows="3"></textarea>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeModals()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
